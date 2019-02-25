@@ -14,18 +14,31 @@ matrix:
 
 language: c
 
-
-notifications:
-    slack: rdesktop:RZWCtYeVc9qVzsBvTzQtmyLt
-    
 before_install:
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update ; fi
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install libtasn1 nettle gnutls; fi
  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get -qq update ; fi
  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -y libpcsclite-dev libxcursor-dev libao-dev libasound2-dev libtasn1-dev nettle-dev libgnutls-dev ; fi
 
-script: 
+script:
     - ./bootstrap
     - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig ./configure ; fi
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./configure ; fi
     - make
+    - strip rdesktop
+    - mv rdesktop rdesktop-$TRAVIS_OS_NAME-$TRAVIS_DIST-$CC_FOR_BUILD
+    - ls -l rdesktop-*
+
+deploy:
+  provider: releases
+  api_key:
+    secure: rif/Jo1EJs3r0nyYR0MuBUOD5oIz93F51I0cv65srIBYKT6Nc/6JKWb6MZ8s34A//RzCkJ6jQxxTUz58yFcAZeRelMQCEIB7HZ4RbhF2fAbv99wlAH53uYz4CmjdV6pBTn9Vc33JQJM6Q7juHwp4m6oRBqBeqB3lyygdmUtGEKz03PoLiLjE2SbTo4hueJBNQiOgPkp1lc8L4mQDOJsXwpD3LxyopruIIodKuIK3ziIooZqsB9o40p2icEETjY2HbpNqHpbunAQDgLILWDWlAD27oaRh2ks2tgtmeugUvBm/5gw7qVjwn2Yajdr4fj89cjrYxxmpq+Xn/YuvNsKPc7tl+ZhWm2sTF/qrXiJoCNwA2Vp5zpGUWYR87nBodM2MU4/u2P/WNe73DsYXSVL2h6fcr5oViiNSg3ngn5Xytq56JZ6NAejYnLu4VU4RFFm0pnWhHSNQVnZXnqh+S4hHrYGpfln9Wzvo/uxJc932dZ9dw6DZpEDSWLaWoEvv07FWk8edCo4waG9+fq2N8YRNhTEFfuT9YmevxB06PMdr5a2r4sm2ctT95PngaCkHDHxJnz80m1nvU9dyrcP3IjJqyAghAORoAxAvW4K5vpkedNPWTOI8Dl3j0VSVlwrmD+ulONfuXEX1wZ8IsGJi7Jrzm8IjIYKYzCrr4tAQ2Mqwv2c=
+  file_glob: true
+  file: rdesktop-*
+  skip_cleanup: true
+  overwrite: true
+  on:
+    repo: Sec42/rdesktop
+    tags: true
+
+if: tag IS present
